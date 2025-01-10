@@ -34,6 +34,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
+        String requestURI = request.getRequestURI();
+
+        // Exclure les endpoints /auth/** du filtrage JWT
+        if (requestURI.startsWith("/auth")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         // Log pour suivre le filtre
         System.out.println("JwtAuthenticationFilter: Filtrage en cours pour l'URL : " + request.getRequestURI());
 

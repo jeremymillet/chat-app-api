@@ -29,7 +29,9 @@ public class FriendService {
                     return new UserDTO(
                             friendUser.getId(),
                             friendUser.getUsername(),
-                            friendUser.getEmail());
+                            friendUser.getEmail(),
+                            friendUser.getCreatedAt()
+                            );
                 })
                 .collect(Collectors.toList());
     }

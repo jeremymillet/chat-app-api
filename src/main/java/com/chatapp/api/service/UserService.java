@@ -5,9 +5,11 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+
 import com.chatapp.api.dto.UserDTO;
 import com.chatapp.api.entity.User;
 import com.chatapp.api.repository.UserRepository;
+
 
 @Service
 public class UserService {
@@ -20,8 +22,8 @@ public class UserService {
         return convertToUserDTO(user); 
     }
 
-    public User createUser(User user) {
-        return userRepository.save(user);
+    public UserDTO createUser(User user) {
+        return convertToUserDTO(userRepository.save(user));
     }
 
     public Optional<User> findUserByEmail(String email) {
@@ -32,7 +34,8 @@ public class UserService {
         return new UserDTO(
             user.getId(),
             user.getEmail(),
-            user.getUsername()
+            user.getUsername(),
+            user.getCreatedAt()
         );
     }
 }

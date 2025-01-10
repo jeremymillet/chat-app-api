@@ -31,4 +31,7 @@ public class User {
     @Column(nullable = false)
     private String email;
 
+    @Column(updatable = false,name="created_at")
+    private Long createdAt ;
+
 }

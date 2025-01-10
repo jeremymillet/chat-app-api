@@ -5,9 +5,8 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class UserDTO {
-    private Long id;
+public class AuthRegisterRequest {
     private String email;
     private String username;
-    private Long createdAt;
+    private String password;
 }

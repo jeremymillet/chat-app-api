@@ -1,10 +1,18 @@
 package com.chatapp.api.controller;
 
+import com.chatapp.api.dto.AuthRegisterRequest;
 import com.chatapp.api.dto.AuthRequest;
 import com.chatapp.api.dto.AuthResponse;
+import com.chatapp.api.dto.UserDTO;
 import com.chatapp.api.entity.User;
 import com.chatapp.api.service.AuthService;
+import com.chatapp.api.service.UserService;
+
+
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,10 +23,13 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private UserService userService;
     
+    @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest authRequest) {
         AuthResponse loginResponse = authService.login(authRequest.getEmail(), authRequest.getPassword());
-
         if (loginResponse != null) {
             return ResponseEntity.ok(loginResponse);
         }
@@ -26,12 +37,15 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody User user) {
+    public ResponseEntity<?> register(@RequestBody AuthRegisterRequest user) {
         try {
-            User createdUser = authService.registerUser(user);
+            UserDTO createdUser = authService.registerUser(user);
             return ResponseEntity.ok(createdUser);
         } catch (Exception e) {
-            return ResponseEntity.status(400).body("Could not register user");
+            if (userService.findUserByEmail(user.getEmail()).isPresent()) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("A user with email " + user.getEmail() + " already exists.");
+            }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Could not register user due to an unexpected error.");
         }
     }
 }
