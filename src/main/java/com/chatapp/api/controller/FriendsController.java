@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.chatapp.api.dto.UserDTO;
+import com.chatapp.api.dto.FriendDTO;
 import com.chatapp.api.entity.Friend;
 import com.chatapp.api.service.FriendService;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,8 +27,9 @@ public class FriendsController {
     private FriendService friendService;
 
     @GetMapping("/{userId}/friends")
-    public ResponseEntity<?> getFriends(@PathVariable Long userId) {
-        List<UserDTO> friends = friendService.getAllFriends(userId);
+    public ResponseEntity<List<FriendDTO>> getFriends(@PathVariable Long userId) {
+        List<FriendDTO> friends = friendService.getAllFriends(userId);
+        System.out.println(friends);
         return ResponseEntity.ok(friends);
     }
     
@@ -53,9 +54,9 @@ public class FriendsController {
         }
     }
     @DeleteMapping("/delete")
-    public ResponseEntity<String> deleteFriend(@RequestParam Long userId,@RequestParam Long friendId) {
+    public ResponseEntity<String> deleteFriend(@RequestParam Long friendShipId) {
         try {
-            friendService.removeFriend(userId,friendId);
+            friendService.removeFriend(friendShipId);
             return ResponseEntity.ok("Friendship deleted successfully.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

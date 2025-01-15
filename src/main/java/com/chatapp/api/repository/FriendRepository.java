@@ -11,10 +11,12 @@ import com.chatapp.api.entity.Friend;
 public interface FriendRepository extends JpaRepository<Friend,Long>{
 
     boolean existsByUserIdAndFriendId(Long userId, Long friendId);
+
     List<Friend> findAllByUserId(Long userId);
+    List<Friend> findAllByFriendId(Long userId);
     Optional<Friend> findByUserIdAndFriendIdAndAccepted(Long userId, Long friendId, boolean accepted);
 
     Friend findByUserIdAndFriendId(Long userId, Long friendId);
     
-    void deleteByUserIdAndFriendId(Long userId, Long friendId);
+    void deleteById(Long friendShipId);
 } 
