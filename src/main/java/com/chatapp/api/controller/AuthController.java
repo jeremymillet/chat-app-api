@@ -4,12 +4,10 @@ import com.chatapp.api.dto.AuthRegisterRequest;
 import com.chatapp.api.dto.AuthRequest;
 import com.chatapp.api.dto.AuthResponse;
 import com.chatapp.api.dto.UserDTO;
-import com.chatapp.api.entity.User;
+
 import com.chatapp.api.service.AuthService;
 import com.chatapp.api.service.UserService;
 
-
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

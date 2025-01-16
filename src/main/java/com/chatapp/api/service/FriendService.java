@@ -2,6 +2,7 @@ package com.chatapp.api.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,9 +10,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.chatapp.api.dto.FriendDTO;
+import com.chatapp.api.entity.Conversation;
 import com.chatapp.api.entity.Friend;
 import com.chatapp.api.entity.User;
+import com.chatapp.api.repository.ConversationRepository;
 import com.chatapp.api.repository.FriendRepository;
+import com.chatapp.api.repository.MessageRepository;
 import com.chatapp.api.repository.UserRepository;
 @Service
 public class FriendService {
@@ -20,6 +24,12 @@ public class FriendService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ConversationRepository conversationRepository;
+
+    @Autowired
+    private MessageRepository messageRepository;
 
     public List<FriendDTO> getAllFriends(Long userId) {
         List<FriendDTO> friends = friendRepository.findAllByUserId(userId).stream()
@@ -48,7 +58,7 @@ public class FriendService {
                             friendUser.getUsername(),
                             friendUser.getCreatedAt(),
                             friend.isAccepted());
-                            
+
                 })
                 .collect(Collectors.toList());
         List<FriendDTO> allFriends = new ArrayList<>();
@@ -56,7 +66,54 @@ public class FriendService {
         allFriends.addAll(friendsIam);
 
         return allFriends;
-        
+
+    }
+    
+    public List<FriendDTO> getAllFriendsWithConversation(Long userId) {
+        List<FriendDTO> friends = friendRepository.findAllByUserId(userId).stream()
+                .map(friend -> {
+                    User friendUser = userRepository.findById(friend.getFriendId())
+                            .orElseThrow(() -> new IllegalArgumentException("Friend not found"));
+                    return new FriendDTO(
+                            friend.getId(),
+                            friendUser.getId(),
+                            friend.getUserId(),
+                            friendUser.getUsername(),
+                            friendUser.getCreatedAt(),
+                            friend.isAccepted());
+                })
+                .collect(Collectors.toList());
+
+        // Récupère les amis pour lesquels l'utilisateur est le destinataire
+        List<FriendDTO> friendsIam = friendRepository.findAllByFriendId(userId).stream()
+                .map(friend -> {
+                    User friendUser = userRepository.findById(friend.getUserId())
+                            .orElseThrow(() -> new IllegalArgumentException("Friend not found"));
+                    return new FriendDTO(
+                            friend.getId(),
+                            friendUser.getId(),
+                            friend.getUserId(),
+                            friendUser.getUsername(),
+                            friendUser.getCreatedAt(),
+                            friend.isAccepted());
+
+                })
+                .collect(Collectors.toList());
+        List<FriendDTO> allFriends = new ArrayList<>();
+        allFriends.addAll(friends);
+        allFriends.addAll(friendsIam);
+
+        // Récupère les conversations avec les amis
+        List<FriendDTO> friendsWithConversations = new ArrayList<>();
+        for (FriendDTO friend : allFriends) {
+            Optional<Conversation> conversation = conversationRepository.findByFriendshipId(friend.getFriendshipId());
+            if (conversation.isPresent()) {
+                friendsWithConversations.add(friend);
+            }
+
+        }
+        return friendsWithConversations;
+
     }
     
     public Friend sendFriendRequest(Long userId, Long friendId) {
@@ -98,6 +155,14 @@ public class FriendService {
     
     @Transactional
     public void removeFriend(Long friendShipId) {
-        friendRepository.deleteById(friendShipId);
+        Optional<Conversation> conversation = conversationRepository.findByFriendshipId(friendShipId);
+        if (conversation.isPresent()) {
+        Long conversationId = conversation.get().getId();
+        messageRepository.deleteAllByConversationId(conversationId);
+        conversationRepository.deleteByFriendshipId(friendShipId);
+    }
+
+    friendRepository.deleteById(friendShipId);
+
     }
 }

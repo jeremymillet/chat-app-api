@@ -32,6 +32,13 @@ public class FriendsController {
         System.out.println(friends);
         return ResponseEntity.ok(friends);
     }
+
+    @GetMapping("/{userId}/friendsWithConversations")
+    public ResponseEntity<List<FriendDTO>> getFriendsWithConversations(@PathVariable Long userId) {
+        List<FriendDTO> friends = friendService.getAllFriendsWithConversation(userId);
+        System.out.println(friends);
+        return ResponseEntity.ok(friends);
+    }
     
     @PostMapping("/send-request")
     public ResponseEntity<String> sendFriendRequest(@RequestParam Long userId, @RequestParam Long friendId) {
