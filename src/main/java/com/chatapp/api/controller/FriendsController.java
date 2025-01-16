@@ -33,6 +33,13 @@ public class FriendsController {
         return ResponseEntity.ok(friends);
     }
 
+    @GetMapping("/{userId}/friend/{friendshipId}")
+    public ResponseEntity<FriendDTO> getFriend(@PathVariable Long userId, @PathVariable Long friendshipId) {
+        FriendDTO friend = friendService.getFriend(userId,friendshipId);
+        System.out.println(friend);
+        return ResponseEntity.ok(friend);
+    }
+
     @GetMapping("/{userId}/friendsWithConversations")
     public ResponseEntity<List<FriendDTO>> getFriendsWithConversations(@PathVariable Long userId) {
         List<FriendDTO> friends = friendService.getAllFriendsWithConversation(userId);

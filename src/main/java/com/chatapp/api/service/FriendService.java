@@ -32,40 +32,64 @@ public class FriendService {
     private MessageRepository messageRepository;
 
     public List<FriendDTO> getAllFriends(Long userId) {
-        List<FriendDTO> friends = friendRepository.findAllByUserId(userId).stream()
-                .map(friend -> {
-                    User friendUser = userRepository.findById(friend.getFriendId())
-                            .orElseThrow(() -> new IllegalArgumentException("Friend not found"));
-                    return new FriendDTO(
-                            friend.getId(),
-                            friendUser.getId(),
-                            friend.getUserId(),
-                            friendUser.getUsername(),
-                            friendUser.getCreatedAt(),
-                            friend.isAccepted());
-                })
-                .collect(Collectors.toList());
+            List<FriendDTO> friends = friendRepository.findAllByUserId(userId).stream()
+                            .map(friend -> {
+                                    User friendUser = userRepository.findById(friend.getFriendId())
+                                                    .orElseThrow(() -> new IllegalArgumentException(
+                                                                    "Friend not found"));
+                                    return new FriendDTO(
+                                                    friend.getId(),
+                                                    friendUser.getId(),
+                                                    friend.getUserId(),
+                                                    friendUser.getUsername(),
+                                                    friendUser.getCreatedAt(),
+                                                    friend.isAccepted());
+                            })
+                            .collect(Collectors.toList());
 
-        // Récupère les amis pour lesquels l'utilisateur est le destinataire
-        List<FriendDTO> friendsIam = friendRepository.findAllByFriendId(userId).stream()
-                .map(friend -> {
-                    User friendUser = userRepository.findById(friend.getUserId())
-                            .orElseThrow(() -> new IllegalArgumentException("Friend not found"));
-                    return new FriendDTO(
-                            friend.getId(),
-                            friendUser.getId(),
-                            friend.getUserId(),
-                            friendUser.getUsername(),
-                            friendUser.getCreatedAt(),
-                            friend.isAccepted());
+            // Récupère les amis pour lesquels l'utilisateur est le destinataire
+            List<FriendDTO> friendsIam = friendRepository.findAllByFriendId(userId).stream()
+                            .map(friend -> {
+                                    User friendUser = userRepository.findById(friend.getUserId())
+                                                    .orElseThrow(() -> new IllegalArgumentException(
+                                                                    "Friend not found"));
+                                    return new FriendDTO(
+                                                    friend.getId(),
+                                                    friendUser.getId(),
+                                                    friend.getUserId(),
+                                                    friendUser.getUsername(),
+                                                    friendUser.getCreatedAt(),
+                                                    friend.isAccepted());
 
-                })
-                .collect(Collectors.toList());
-        List<FriendDTO> allFriends = new ArrayList<>();
-        allFriends.addAll(friends);
-        allFriends.addAll(friendsIam);
+                            })
+                            .collect(Collectors.toList());
+            List<FriendDTO> allFriends = new ArrayList<>();
+            allFriends.addAll(friends);
+            allFriends.addAll(friendsIam);
 
-        return allFriends;
+            return allFriends;
+
+    }
+    
+    public FriendDTO getFriend(Long userId,Long friendshipId) {
+        Friend friendship = friendRepository.findById(friendshipId)
+                        .orElseThrow(() -> new IllegalArgumentException("Friend not found"));
+        Long senderId = friendship.getUserId();
+        Long receiverId = friendship.getFriendId();    
+        Long friendId = senderId.equals(userId) ? receiverId : senderId;
+        if (friendId.equals(userId)) {
+                throw new IllegalStateException("The user ID matches both sender and receiver IDs in the friendship.");
+        }
+        User friend = userRepository.findById(friendId)
+                        .orElseThrow(() -> new IllegalArgumentException("Friend not found"));
+        
+        return new FriendDTO(
+                        friendship.getId(),
+                        friend.getId(),
+                        friendship.getUserId(),
+                        friend.getUsername(),
+                        friend.getCreatedAt(),
+                        friendship.isAccepted());
 
     }
     
