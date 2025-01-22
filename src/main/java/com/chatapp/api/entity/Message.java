@@ -33,7 +33,7 @@ public class Message {
     @Column(nullable = false)
     private Long timestamp;
 
-    @Column(nullable = false,name="is_read")
+    @Column(nullable = true,name="is_read")
     private boolean isRead = false;
 
     public void setIsRead(boolean isRead) {

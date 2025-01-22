@@ -10,7 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.chatapp.api.dto.MessageDTO;
+import com.chatapp.api.dto.MessageRequest;
+import com.chatapp.api.entity.Conversation;
 import com.chatapp.api.entity.Message;
+import com.chatapp.api.repository.ConversationRepository;
 import com.chatapp.api.repository.MessageRepository;
 
 @Service
@@ -19,9 +22,20 @@ public class MessageService {
     @Autowired
     private MessageRepository messageRepository;
 
-    public Message sendMessage(MessageDTO messageDTO){
-        Message message = convertToMessage(messageDTO);
-        return messageRepository.save(message);
+    @Autowired
+    private ConversationRepository conversationRepository;
+
+    public Message sendMessage(MessageRequest messageRequest){
+        Message message = convertToMessage(messageRequest);
+        messageRepository.save(message);
+
+        Conversation conversation = conversationRepository.findById(messageRequest.getConversationId())
+                .orElseThrow(() -> new IllegalArgumentException("Conversation not found"));
+        conversation.setLastMessage(messageRequest.getContent());
+        conversation.setLastActive(LocalDateTime.now());
+        conversationRepository.save(conversation);
+
+        return message;
     }
 
     public List<MessageDTO> getMessages(Long conversationId) {
@@ -39,7 +53,7 @@ public class MessageService {
         messageRepository.save(message);
     }
 
-    private MessageDTO convertToMessageDTO(Message message) {
+    public MessageDTO convertToMessageDTO(Message message) {
         MessageDTO messageDTO = new MessageDTO();
         messageDTO.setId(message.getId());
         messageDTO.setSenderId(message.getSenderId());
@@ -55,12 +69,12 @@ public class MessageService {
         return messageDTO;
     }
     
-    private Message convertToMessage(MessageDTO messageDTO) {
+    private Message convertToMessage(MessageRequest messageRequest) {
         Message message = new Message();
-        message.setSenderId(messageDTO.getSenderId());
-        message.setContent(messageDTO.getContent());
+        message.setConversationId(messageRequest.getConversationId());
+        message.setSenderId(messageRequest.getSenderId());
+        message.setContent(messageRequest.getContent());
         message.setTimestamp(System.currentTimeMillis()); // Ajoute un timestamp si nécessaire
-        message.setIsRead(false); // Valeur par défaut pour isRead
         return message;
     }
 }

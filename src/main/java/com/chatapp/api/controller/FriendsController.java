@@ -51,6 +51,7 @@ public class FriendsController {
     public ResponseEntity<String> sendFriendRequest(@RequestParam Long userId, @RequestParam Long friendId) {
         try {
             Friend friendRequest = friendService.sendFriendRequest(userId, friendId);
+            
             return ResponseEntity.ok("Friend request sent successfully");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
