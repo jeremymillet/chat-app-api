@@ -4,6 +4,7 @@ package com.chatapp.api.filter;
 import com.chatapp.api.service.CustomUserDetailsService;
 import com.chatapp.api.util.JwtUtil;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -50,22 +51,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         System.out.println("Token extrait : " + token);
 
         // 2. Vérifier si le token est valide
-        if (token != null && jwtUtil.validateToken(token)) {
-            String username = jwtUtil.getUsernameFromToken(token);
-            System.out.println("Utilisateur extrait du token : " + username);
+        if (token != null) {
+        try {
+            if (jwtUtil.validateAccessToken(token)) {
+                String id = jwtUtil.getIdFromRefreshToken(token);
 
-            // 3. Créer une authentification et la mettre dans le contexte de sécurité
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    username, null, null);
-
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-            // Mettre l'authentification dans le contexte de sécurité
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            System.out.println("Authentification réussie pour : " + username);
-        } else {
-            System.out.println("Token non valide ou absent.");
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                        id, null, null);
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
+        } catch (ExpiredJwtException e) {
+            // Token expiré : laisse la requête passer pour renvoyer une erreur HTTP 401
+            System.out.println("Token expiré : " + e.getMessage());
         }
+}
 
         // Continuer la chaîne de filtres
         filterChain.doFilter(request, response);

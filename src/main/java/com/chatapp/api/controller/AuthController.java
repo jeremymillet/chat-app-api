@@ -8,10 +8,14 @@ import com.chatapp.api.dto.UserDTO;
 import com.chatapp.api.service.AuthService;
 import com.chatapp.api.service.UserService;
 
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -27,12 +31,27 @@ public class AuthController {
     
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest authRequest) {
-        
+
         AuthResponse loginResponse = authService.login(authRequest.getEmail(), authRequest.getPassword());
         if (loginResponse != null) {
             return ResponseEntity.ok(loginResponse);
         }
         return ResponseEntity.status(401).body("Invalid credentials");
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshAccessToken(@RequestBody Map<String, String> request) {
+        String refreshToken = request.get("refreshToken");
+        AuthResponse authResponse = authService.refreshAccessToken(refreshToken);
+
+        if (authResponse != null) {
+
+            // Retourner la réponse avec le nouvel access token
+            return ResponseEntity.ok(Map.of(
+                    "accessToken", authResponse.getAccessToken(),
+                    "refreshToken", authResponse.getRefreshToken()));
+        }
+        return ResponseEntity.status(401).body("refresh token a expirée");
     }
 
     @PostMapping("/register")

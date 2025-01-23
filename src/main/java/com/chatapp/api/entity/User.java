@@ -32,6 +32,9 @@ public class User {
     private String email;
 
     @Column(updatable = false,name="created_at")
-    private Long createdAt ;
+    private Long createdAt;
+    
+    @Column(name="refresh_token")
+    private String refreshToken;
 
 }

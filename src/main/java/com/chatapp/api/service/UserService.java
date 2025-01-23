@@ -29,6 +29,14 @@ public class UserService {
     public Optional<User> findUserByEmail(String email) {
         return userRepository.findByEmail(email);
     }
+    
+    public Optional<User> findUserById(Long id) {
+        return userRepository.findById(id);
+    }
+
+    public void findUserByEmailAndUpdateRefreshToken(Long id, String refreshToken) {
+        userRepository.updateRefreshToken(refreshToken,id);
+    }
 
     private UserDTO convertToUserDTO(User user) {
         return new UserDTO(

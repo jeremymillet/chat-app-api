@@ -56,6 +56,7 @@ public class MessageService {
     public MessageDTO convertToMessageDTO(Message message) {
         MessageDTO messageDTO = new MessageDTO();
         messageDTO.setId(message.getId());
+        messageDTO.setConversationId(message.getConversationId());
         messageDTO.setSenderId(message.getSenderId());
         messageDTO.setContent(message.getContent());
 

@@ -17,37 +17,61 @@ import io.jsonwebtoken.SignatureAlgorithm;
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.secret-key}")
-    private String jwtSecretKey;
+    @Value("${jwt.secret-key-access-token}")
+    private String jwtSecretKeyAccessToken;
+
+    @Value("${jwt.secret-key-refresh-token}")
+    private String jwtSecretKeyRefreshToken;
 
     @Value("${jwt.expiration-time}")
     private Long jwtExpirationTime;
 
-    private Key getSigningKey() {
+    private Key getSigningKeyAccessToken() {
         // Générer la clé HMAC en utilisant le secret en Base64
-        byte[] keyBytes = Base64.getEncoder().encode(jwtSecretKey.getBytes());
+        byte[] keyBytes = Base64.getEncoder().encode(jwtSecretKeyAccessToken.getBytes());
+        return new SecretKeySpec(keyBytes, SignatureAlgorithm.HS512.getJcaName());
+    }
+    
+    private Key getSigningKeyRefreshToken() {
+        // Générer la clé HMAC en utilisant le secret en Base64
+        byte[] keyBytes = Base64.getEncoder().encode(jwtSecretKeyRefreshToken.getBytes());
         return new SecretKeySpec(keyBytes, SignatureAlgorithm.HS512.getJcaName());
     }
 
-    public String generateToken(String username) {
+    public String generateAccessToken(String id) {
         Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, username);
+        return createAccessToken(claims, id);
     }
 
-    private String createToken(Map<String, Object> claims, String username) {
+    public String generateRefreshToken(String id) {
+        Map<String, Object> claims = new HashMap<>();
+        return createRefreshToken(claims, id);
+    }
+    
+    public String createRefreshToken(Map<String, Object> claims,String id) {
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(username)
+                .setSubject(id)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationTime))
-                .signWith(getSigningKey()) // Utilisation avec la clé générée
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationTime * 7)) // Durée plus longue
+                .signWith(getSigningKeyRefreshToken())
                 .compact();
     }
 
-    public boolean validateToken(String token) {
+    private String createAccessToken(Map<String, Object> claims, String id) {
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(id)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationTime))
+                .signWith(getSigningKeyAccessToken()) // Utilisation avec la clé générée
+                .compact();
+    }
+
+    public boolean validateAccessToken(String token) {
         try {
             Jwts.parserBuilder()
-                    .setSigningKey(getSigningKey())
+                    .setSigningKey(getSigningKeyAccessToken())
                     .build()
                     .parseClaimsJws(token);
             return true;
@@ -56,9 +80,30 @@ public class JwtUtil {
         }
     }
 
-    public String getUsernameFromToken(String token) {
+    public boolean validateRefreshToken(String token) {
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(getSigningKeyRefreshToken())
+                    .build()
+                    .parseClaimsJws(token);
+            return true;
+        } catch (JwtException e) {
+            return false;
+        }
+    }
+
+    public String getIdFromRefreshToken(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+                .setSigningKey(getSigningKeyRefreshToken())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+    }
+    
+    public String getIdFromAccessToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKeyAccessToken())
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
