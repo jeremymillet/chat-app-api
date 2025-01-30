@@ -2,6 +2,8 @@ package com.chatapp.api.service;
 
 import com.chatapp.api.util.JwtUtil;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 
 import com.chatapp.api.dto.AuthRegisterRequest;
@@ -12,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 @Service
@@ -89,7 +92,7 @@ public class AuthService {
 
         // Récupère l'utilisateur
         Optional<User> userOptional = userService.findUserById(Long.parseLong(id));
-        
+
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             if (!refreshToken.equals(user.getRefreshToken())) {
@@ -101,10 +104,20 @@ public class AuthService {
 
             // Retourne le nouveau token
             return new AuthResponse(newAccessToken, refreshToken, userService.getUserById(user.getId()));
-        }
-        else {
+        } else {
             throw new RuntimeException("id non reconnu.");
         }
         // Vérifie si le refresh token correspond à celui en base
+    }
+    
+    public String getCookieValue(HttpServletRequest request, String name) {
+        if (request.getCookies() != null) {
+            return Arrays.stream(request.getCookies())
+                    .filter(cookie -> name.equals(cookie.getName()))
+                    .map(Cookie::getValue)
+                    .findFirst()
+                    .orElse(null);
+        }
+        return null;
     }
 }

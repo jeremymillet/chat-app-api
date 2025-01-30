@@ -8,14 +8,15 @@ import com.chatapp.api.dto.UserDTO;
 import com.chatapp.api.service.AuthService;
 import com.chatapp.api.service.UserService;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -34,22 +35,28 @@ public class AuthController {
 
         AuthResponse loginResponse = authService.login(authRequest.getEmail(), authRequest.getPassword());
         if (loginResponse != null) {
-            return ResponseEntity.ok(loginResponse);
+            ResponseCookie cookie = ResponseCookie.from("refreshToken", loginResponse.getRefreshToken())
+                .httpOnly(true)   // Rend le cookie accessible uniquement par le serveur
+                .secure(true)     // Active HTTPS (désactiver en local si nécessaire)
+                .sameSite("None") // Autorise le partage de cookie entre domaines différents
+                .path("/")        // Rendre le cookie accessible à toutes les routes
+                .maxAge(7 * 24 * 60 * 60) // Expiration en 7 jours
+                .build();
+            return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(loginResponse);
         }
         return ResponseEntity.status(401).body("Invalid credentials");
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshAccessToken(@RequestBody Map<String, String> request) {
-        String refreshToken = request.get("refreshToken");
+    public ResponseEntity<?> refreshAccessToken(HttpServletRequest request) {
+        String refreshToken = authService.getCookieValue(request, "refreshToken");
+        System.out.println("refreshToken: " + refreshToken);
         AuthResponse authResponse = authService.refreshAccessToken(refreshToken);
-
         if (authResponse != null) {
-
             // Retourner la réponse avec le nouvel access token
-            return ResponseEntity.ok(Map.of(
-                    "accessToken", authResponse.getAccessToken(),
-                    "refreshToken", authResponse.getRefreshToken()));
+            return ResponseEntity.ok()
+            .body(authResponse);
         }
         return ResponseEntity.status(401).body("refresh token a expirée");
     }

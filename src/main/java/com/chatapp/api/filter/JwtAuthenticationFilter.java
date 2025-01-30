@@ -52,9 +52,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 2. Vérifier si le token est valide
         if (token != null) {
-        try {
+            System.out.println("test");
+            try {
+                System.out.println("test2");
             if (jwtUtil.validateAccessToken(token)) {
-                String id = jwtUtil.getIdFromRefreshToken(token);
+                String id = jwtUtil.getIdFromAccessToken(token);
 
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         id, null, null);
@@ -63,6 +65,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         } catch (ExpiredJwtException e) {
             // Token expiré : laisse la requête passer pour renvoyer une erreur HTTP 401
+            
             System.out.println("Token expiré : " + e.getMessage());
         }
 }
