@@ -1,9 +1,11 @@
 HELP.md
+# Secrets
+.env
 target/
+src/main/resources/application-local.properties
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-
 ### STS ###
 .apt_generated
 .classpath

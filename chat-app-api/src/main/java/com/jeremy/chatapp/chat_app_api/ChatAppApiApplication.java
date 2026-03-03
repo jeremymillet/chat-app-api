@@ -6,7 +6,6 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
 @SpringBootApplication()
 public class ChatAppApiApplication {
-
 	public static void main(String[] args) {
 		SpringApplication.run(ChatAppApiApplication.class, args);
 	}

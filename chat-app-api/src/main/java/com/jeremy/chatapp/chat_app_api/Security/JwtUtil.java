@@ -1,4 +1,4 @@
-package com.chatapp.api.util;
+package com.jeremy.chatapp.chat_app_api.Security;
 
 import java.sql.Date;
 import java.util.HashMap;
