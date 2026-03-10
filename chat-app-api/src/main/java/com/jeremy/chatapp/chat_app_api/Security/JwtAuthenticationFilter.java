@@ -1,8 +1,7 @@
-package com.jeremy.chatapp.chat_app_api.Security;
+package com.jeremy.chatapp.chat_app_api.security;
 
 
-import com.jeremy.chatapp.chat_app_api.Service.CustomUserDetailsService;
-import com.jeremy.chatapp.chat_app_api.Security.JwtUtil;
+import com.jeremy.chatapp.chat_app_api.service.CustomUserDetailsService;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;

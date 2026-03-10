@@ -1,8 +1,8 @@
-package com.jeremy.chatapp.chat_app_api.Security;
+package com.jeremy.chatapp.chat_app_api.security;
 
-import com.jeremy.chatapp.chat_app_api.Security.JwtAuthenticationFilter;
-import com.jeremy.chatapp.chat_app_api.Service.CustomUserDetailsService;
-import com.jeremy.chatapp.chat_app_api.Security.JwtUtil;
+import com.jeremy.chatapp.chat_app_api.security.JwtAuthenticationFilter;
+import com.jeremy.chatapp.chat_app_api.security.JwtUtil;
+import com.jeremy.chatapp.chat_app_api.service.CustomUserDetailsService;
 
 import java.util.List;
 
